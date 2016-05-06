@@ -58,23 +58,31 @@ class FileHydrator extends AbstractHydrator
      */
     public function preload(EntryCollection $collection)
     {
+
         $query = $this->model->fromEntryCollection($collection);
+        $files = $query->get();
 
         if (isset($this->hydrators['matrix'])) {
-            $query->fromMatrix(
+            $query = $this->model->fromMatrix(
                 $this->hydrators['matrix']->getCols(),
                 $this->hydrators['matrix']->getRows()
             );
+            $matrixFiles = $query->get();
+            foreach ($matrixFiles as $file) {
+                $files->push($file);
+            }
         }
 
         if (isset($this->hydrators['grid'])) {
-            $query->fromGrid(
+            $query = $query->fromGrid(
                 $this->hydrators['grid']->getCols(),
                 $this->hydrators['grid']->getRows()
             );
+            $gridFiles = $query->get();
+            foreach ($gridFiles as $file) {
+                $files->push($file);
+            }
         }
-
-        $files = $query->get();
 
         foreach ($files as $file) {
             if (! $file->upload_location_id || ! $uploadPref = $this->uploadPrefRepository->find($file->upload_location_id)) {
